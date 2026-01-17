@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recepcion XV Años - Control de Mesas</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Montserrat:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --xv-pink: #f8d7da;
+            --xv-gold: #d4af37;
+            --xv-dark-pink: #e4a1a7;
+        }
+
+        body {
+            background-color: #fcf8f8;
+            font-family: 'Montserrat', sans-serif;
+            padding-bottom: 50px;
+        }
+
+        .header-section {
+            background: linear-gradient(rgba(255,255,255,0.8), rgba(255,255,255,0.8)), 
+                        url('https://www.transparenttextures.com/patterns/cubes.png');
+            padding: 30px 0;
+            text-align: center;
+            border-bottom: 3px solid var(--xv-gold);
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            font-family: 'Great Vibes', cursive;
+            color: var(--xv-gold);
+            font-size: 3.5rem;
+            margin-bottom: 10px;
+        }
+
+        .search-container {
+            position: sticky;
+            top: 10px;
+            z-index: 1000;
+            background: white;
+            padding: 15px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            border: 1px solid var(--xv-pink);
+        }
+
+        .card-mesa {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+            transition: transform 0.2s;
+            height: 100%;
+            background: white;
+        }
+
+        .card-mesa:hover {
+            transform: translateY(-5px);
+        }
+
+        .card-header-xv {
+            background-color: var(--xv-pink);
+            color: #5d4037;
+            font-weight: 600;
+            border-radius: 15px 15px 0 0 !important;
+            border-bottom: 2px solid var(--xv-gold);
+            text-align: center;
+        }
+
+        .guest-item {
+            font-size: 0.9rem;
+            padding: 4px 0;
+            border-bottom: 1px dotted #eee;
+        }
+
+        .guest-item:last-child { border-bottom: none; }
+
+        .highlight {
+            background-color: #fff3cd;
+            font-weight: bold;
+            color: #856404;
+            padding: 2px 5px;
+            border-radius: 4px;
+        }
+
+        .mesa-numero {
+            font-size: 1.5rem;
+            color: var(--xv-gold);
+        }
+
+        .no-results {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            color: #999;
+        }
+    </style>
+</head>
+<body>
+
+<div class="header-section">
+    <h1>Mis XV Años</h1>
+    <p class="text-muted">Protocolo de Recepción e Invitados</p>
+</div>
+
+<div class="container">
+    <div class="row justify-content-center mb-5">
+        <div class="col-md-8 search-container">
+            <input type="text" id="searchInput" class="form-control form-control-lg text-center" 
+                   placeholder="🔍 Buscar nombre o número de mesa...">
+        </div>
+    </div>
+
+    <div class="row g-4" id="mesasContainer">
+        </div>
+
+    <div id="noResults" class="no-results">
+        <h3>No se encontraron invitados con ese nombre.</h3>
+    </div>
+</div>
+
+<script>
+    // Datos de la lista (Estructurados para facilitar la búsqueda)
+    const dataMesas = [
+        { id: 2, invitados: ["Ali", "Bere", "Tavo", "Amigo Max", "Angelica", "Pedro", "Santi", "Maricela (Prima)", "Hija de Maricela", "Erik"] },
+        { id: 3, invitados: ["Geno", "Trino", "Noemi", "Alfredo", "Marcella", "Compadre (Esposo de Marcella)", "Hijo de Marcella", "Hija de Marcella", "Mamá de Marcella"] },
+        { id: 4, invitados: ["Fernando", "Zaira", "Mamá Z.", "Sofi", "Invitado de Fer 1", "Invitado Fer 2", "Invitado Fer 3", "Monse", "Mundo (Novio de Monse)", "Quique"] },
+        { id: 5, invitados: ["VERO", "Invitado de Vero 1", "Invitado de Vero 2", "Invitado de Vero 3", "Invitado de Vero 4", "Yoyis", "Invitado de Yoyis", "Tía Angelita", "Mario", "Miris (Esposa de Mario)"] },
+        { id: 6, invitados: ["Marco", "Benita", "Naty", "Adri", "Novio Adri", "Josue", "Toño", "Jide", "Julio", "Jesus"] },
+        { id: 7, invitados: ["Diego", "Novia de Diego", "Josue Amigo de Diego", "Novia de Josue", "Sebastian", "Ortega", "Ely", "Michel", "Fredy"] },
+        { id: 8, invitados: ["Santiago", "Mireya", "Tía Lulu", "Zeydy", "Tía Rosita", "Romina", "Beto", "Isa", "Oswaldo", "Hijo de Oswaldo"] },
+        { id: 9, invitados: ["Don Emilio", "Doña Gloria", "Gloria", "Merida", "Luis", "Manuela", "Valentina", "Miguel", "Ari", "Ari hija"] },
+        { id: 10, invitados: ["Don Madelano", "Doña Flora", "Toy", "Novia de Toy", "Gaby", "Esposo de Gaby", "Hijo de Gaby", "Hija de Gaby", "Hija de Gaby", "Novio de la hija de Gaby"] },
+        { id: 11, invitados: ["Elsa", "Esposo de Elsa", "Hijo de Elsa", "Hija de Elsa", "Hija de Elsa", "Hija de Elsa", "Suegro de Elsa", "Suegra de Elsa", "Invitada de Elsa"] },
+        { id: 12, invitados: ["Tío Juan", "Tía Marga", "Leo", "Juanito", "Roy", "Paulina", "Fer", "Alex"] },
+        { id: 13, invitados: ["Beto", "Ana", "Victor", "Ale", "Beto", "Miriam", "Irving", "Brayam", "Novio de Miriam", "Novia de Irving"] },
+        { id: 14, invitados: ["Tío Beto", "Tía Gloria", "Tía Toña", "Marlen", "Lucy", "Ximena", "Novio de Ximena", "Gaby", "Genaro"] },
+        { id: 15, invitados: ["Karina", "Sergio", "Casandra", "Jessica", "Novio de Jessica", "Novio de Cassandra", "Irma", "Esposo de Irma", "Hijo de Irma", "Hija de Irma"] },
+        { id: 16, invitados: ["Tía Isa", "Tío Felipe", "Rocio", "Mundo", "Alonso", "Ale esposa de Alonso", "Hijo de Alonso", "Hija de Alonso", "Tía Paty", "Tio Jil"] },
+        { id: 17, invitados: ["Doña Juana", "Chayo", "Hija", "Hija", "Novio", "Matilde", "Esposo", "Hijo", "Hija"] },
+        { id: 18, invitados: ["Chuy", "Esposo", "Angel", "Arturo", "Profesora de Valeria", "Invitado de la profesora", "Yadhira", "Invitada de Yadhira", "Marco"] },
+        { id: 19, invitados: ["Yamilet", "Mamá", "Papá de Yamilet", "Mayte", "Mayte 2", "Mayte 3", "Ameyaly", "Ameyaly"] },
+        { id: 20, invitados: ["Kimberly", "Kimb", "Joshua", "Joshua 2", "Joshua 3", "Joshua 4", "Nahomi", "Nahomi 2", "Nahomi"] },
+        { id: 23, invitados: ["Angy", "Esposo", "Hija", "Hijo", "Sobrino", "Hijo Irma", "Esposa", "Rosario Z", "Rosario 2", "Rosario 3"] },
+        { id: 24, invitados: ["Ian", "Ian 2", "Ian 3", "Antonio", "Antonio 2", "Antonio 3", "Nahomi", "Nahomi", "Yoali", "Yoali"] },
+        { id: 25, invitados: ["Lic Benito", "Esposa", "Hijo", "Hijo", "Lino", "Invitado de Lino", "Invitado de Lino", "Arturo", "Invitado de Arturo", "Invitado de Arturo"] },
+        { id: 26, invitados: ["Ingeniero (Compañero Papá)", "Esposa del Ingeniero", "Hija del Ingeniero", "Hija del Ingeniero", "Lic. Francisco", "Esposa", "Hija", "Fernanda", "Esposo", "Hija"] },
+        { id: 27, invitados: ["Erika", "Familiar de Erika 1", "Familiar de Erika 2", "Familiar de Erika 3", "Familiar de Erika 4", "Familiar de Erika 5", "Erika Juarez", "Erika Juarez"] },
+        { id: 28, invitados: ["Andres", "Flora", "Max", "Chucho", "Andre", "Kiko", "Lucy", "Hijo de Kiko", "Hija de kiko", "Invitado de Kiko"] },
+        { id: 29, invitados: ["Edgar", "Esposa", "Hijo", "Hijo", "Hijo", "Pelon", "Esposa", "Hija", "Hija", "Hijo"] }
+    ];
+
+    const container = document.getElementById('mesasContainer');
+    const searchInput = document.getElementById('searchInput');
+    const noResults = document.getElementById('noResults');
+
+    // Función para normalizar texto (quitar acentos)
+    const normalizar = (text) => text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+    function renderMesas(filtro = '') {
+        container.innerHTML = '';
+        let count = 0;
+        const term = normalizar(filtro);
+
+        dataMesas.sort((a,b) => a.id - b.id).forEach(mesa => {
+            const matchInMesa = term === '' || 
+                               mesa.id.toString().includes(term) ||
+                               mesa.invitados.some(inv => normalizar(inv).includes(term));
+
+            if (matchInMesa) {
+                count++;
+                const col = document.createElement('div');
+                col.className = 'col-6 col-md-4 col-lg-3';
+                
+                let invitadosHtml = mesa.invitados.map(inv => {
+                    const esMatch = term !== '' && normalizar(inv).includes(term);
+                    return `<div class="guest-item ${esMatch ? 'highlight' : ''}">${inv}</div>`;
+                }).join('');
+
+                col.innerHTML = `
+                    <div class="card card-mesa">
+                        <div class="card-header card-header-xv">
+                            MESA <span class="mesa-numero">${mesa.id}</span>
+                        </div>
+                        <div class="card-body">
+                            ${invitadosHtml}
+                        </div>
+                    </div>
+                `;
+                container.appendChild(col);
+            }
+        });
+
+        noResults.style.display = count === 0 ? 'block' : 'none';
+    }
+
+    searchInput.addEventListener('input', (e) => {
+        renderMesas(e.target.value);
+    });
+
+    // Carga inicial
+    renderMesas();
+</script>
+
+</body>
+</html>
